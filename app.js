@@ -1,64 +1,75 @@
 //jshint esversion:6
 
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
+const mongoose = require('mongoose');
 
+mongoose.connect(
+  "mongodb://localhost:27017/fruitsDB",
+  {useNewUrlParser: true},
+  {useUnifiedTopology: true}
+);
 
-const url = 'mongodb://localhost:27017';
-const dbName = 'fruitsDB';
-const client = new MongoClient(url, {
-  useUnifiedTopology: true
+const fruitSchema = new mongoose.Schema({
+  name: String,
+  rating: Number,
+  review: String
 });
 
+const Fruit = mongoose.model("Fruit", fruitSchema);
 
-client.connect(err => {
-  assert.equal(null, err);
-  console.log("Successfully connected to server");
-  const db = client.db(dbName);
-  // perform actions on the collection object
-  findDocuments(db, function() {
-      client.close();
+// const fruit = new Fruit ({
+//   name: "Apple",
+//   rating: 7,
+//   review: "Solid fruit"
+// });
+//
+// fruit.save();
+//
+// const personSchema = new mongoose.Schema({
+//   name: String,
+//   age: Number
+// });
+//
+const Person = mongoose.model("Person", fruitSchema);
+//
+// const person = new Person ({
+//   name: "John",
+//   age: 37
+// });
+//
+// person.save();
+
+const kiwi = new Fruit({
+  name: "Kiwi",
+  score: 5,
+  review: "Nice color"
+});
+const orange = new Fruit({
+  name: "Orange",
+  score: 5,
+  review: "Sour"
+});
+const banana = new Fruit({
+  name: "Banana",
+  score: 9,
+  review: "Sweet!"
+});
+
+// Fruit.insertMany([kiwi, orange, banana], function(err) {
+//   if (err) {
+//     console.log(err);
+//   } else {
+//     console.log("Successfully saved all the fruits to fruitsDB");
+//   }
+// });
+
+// //Function to find the elements in the db
+Fruit.find(function(err, fruits){
+  if (err) {
+    console.log(err);
+  } else {
+    mongoose.connection.close();
+    fruits.forEach(function(fruit) {
+      console.log(fruit.name);
     });
-});
-
-//Function to insert elements
-const insertDocuments = function(db, callback) {
-  // Get the documents collection
-  const collection = db.collection('fruits');
-  // Insert some documents
-  collection.insertMany([{
-      name: "Apple",
-      score: 8,
-      review: "Great fruit"
-    },
-    {
-      name: "Orange",
-      score: 6,
-      review: "Kinda sour"
-    },
-    {
-      name: "Banana",
-      score: 9,
-      review: "Great stuff!"
-    }
-  ], function(err, result) {
-    assert.equal(err, null);
-    assert.equal(3, result.result.n);
-    assert.equal(3, result.ops.length);
-    console.log("Inserted 3 documents into the collection");
-    callback(result);
-  });
-}
-
-//Function to find the elements in the db
-const findDocuments = function(db, callback) {
-  // Get the documents collection
-  const collection = db.collection('fruits');
-  // Find some documents
-  collection.find({}).toArray(function(err, fruits) {
-    assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(fruits)
-    callback(fruits);
-  });
-}
+  }
+})
